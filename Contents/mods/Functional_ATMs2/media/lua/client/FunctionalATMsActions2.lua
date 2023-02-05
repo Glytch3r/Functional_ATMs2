@@ -215,8 +215,8 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                 obj:setIsDismantable(false)
                                 obj:setBlockAllTheSquare(true)
                                 -- obj:createContainersFromSpriteProperties()
-                                obj:getContainer():setDrawDirty(true)
                                 obj:getContainer():setType('atm2')
+                                obj:getContainer():setDrawDirty(true)
                                 obj:getModData()['atmConverted'] = true
 
                                 -- obj:AddItem('Base.Apple')
