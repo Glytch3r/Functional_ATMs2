@@ -95,59 +95,41 @@ end
 
  ]]
 
- function FunctionalATMs2.checkQty(toSell)
-    if toSell:getName():contains("Sweater") or toSell:getName():contains("sweater") then
-        return 0
-    elseif toSell:getName():contains("Hat_GoldStar") then
-        return 0
-    elseif toSell:getName():contains("Hat") or toSell:getName():contains("hat") then
-        return 0
-    elseif toSell:getName():contains("Jacket") or toSell:getName():contains("jacket") then
-        return 0
-    elseif toSell:getName():contains("Paint") or toSell:getName():contains("paint") then
-        return 0
-    elseif toSell:getName():contains("Sock") or toSell:getName():contains("sock") then
-        return 0
-    elseif toSell:getName():contains("Shirt") or toSell:getName():contains("shirt") then
-        return 0
-    elseif toSell:getName():contains("Pants") or toSell:getName():contains("pants") then
-        return 0
-    elseif toSell:getName():contains("Diamond") or toSell:getName():contains("diamond") then
-        return 5
-    elseif toSell:getName():contains("Tags") or toSell:getName():contains("Tag") then
-        return 3
-    elseif toSell:getName():contains("Locket") or toSell:getName():contains("locket") then
-        return 3
-    elseif toSell:getName():contains("Ruby") or toSell:getName():contains("ruby") then
-        return 2
-    elseif toSell:getName():contains("Pearl") or toSell:getName():contains("pearl") then
-        return 2
-    elseif toSell:getName():contains("Sapphire") or toSell:getName():contains("sapphire") then
-        return 2
-    elseif toSell:getName():contains("Emerald") or toSell:getName():contains("emerald") then
-        return 2
-    elseif toSell:getName():contains("Amethyst") or toSell:getName():contains("amethyst") then
-        return 2
-    elseif toSell:getName():contains("Amber") or toSell:getName():contains("amber") then
-        return 2
-    elseif toSell:getName():contains("Gold") or toSell:getName():contains("gold") then
-        return 1
-    elseif toSell:getName():contains("Silver") or toSell:getName():contains("silver") then
-        return 1
-    elseif toSell:getName():contains("Antique") or toSell:getName():contains("antique") then
-        return 1
-    else
-        return 0
+---associative array of string-patterns and values
+local itemToSellValues = {
+    ["sweater"]=0, ["hat"]=0, --["hat_goldstar"]=0,
+    ["jacket"]=0, ["paint"]=0, ["sock"]=0, ["shirt"]=0, ["pants"]=0,
+
+    ["diamond"]=5,
+
+    ["tag"]=3, ["locket"]=3,
+
+    ["ruby"]=2, ["pearl"]=2, ["sapphire"]=2, ["emerald"]=2, ["amethyst"]=2, ["amber"]=2,
+
+    ["gold"]=1, ["silver"]=1, ["antique"]=1,
+}
+
+---creates a second table of just names and sorts them by the associative array's value
+---this table is just the string-patterns to use with pairs() for consistent order
+local itemsNamesSorted = {}
+for key, value in pairs(itemToSellValues) do table.insert(itemsNamesSorted, key) end
+table.sort(itemsNamesSorted, function(a, b) return (itemToSellValues[a] < itemToSellValues[b]) end)
+
+function FunctionalATMs2.checkQty(toSell)
+
+    local itemName = string.lower(toSell:getName())
+
+    ---use sorted table with pairs() for consistent order
+    --- `name` (value in table) is used as a "key" in the associative array to get matching value there
+    for _,name in pairs(itemsNamesSorted) do
+        if itemName:contains(name) then
+            return itemToSellValues[name]
+        end
     end
+
+    return 0
 end
 
-function FunctionalATMs2.isSellable(toSell)
-    if FunctionalATMs2.checkQty(toSell) > 0 then
-        return true
-    else
-        return false
-    end
-end
 
 function FunctionalATMs2.check(toSell)
     if sellables[toSell] then
@@ -157,21 +139,19 @@ function FunctionalATMs2.check(toSell)
     end
 end
 ------------------------               ---------------------------
-function FunctionalATMs2.getTotalItemsValue(containers, obj)
+function FunctionalATMs2.getTotalItemsValue(atm)
     local totalSellAmt = 0
-    local container = nil
-    local atm = containers:get(2)
-    
+
     print('-------------------------')
     for i = atm:getItems():size(), 1, -1 do
         local toSell = atm:getItems():get(i - 1);
-        if toSell and FunctionalATMs2.isSellable(toSell) == true and
-            not (toSell:isCustomName() and toSell:isCustomName() ~= toSell:getName()) then
-            local piecePrice = FunctionalATMs2.checkQty(toSell)
+
+        local piecePrice = FunctionalATMs2.checkQty(toSell)
+        if toSell and piecePrice>0 and not (toSell:isCustomName() and toSell:isCustomName() ~= toSell:getName()) then
             print('Sold ' .. toSell:getName() .. ' for ' .. piecePrice)
-            getPlayer():setHaloNote(tostring('Sold ' .. toSell:getName() .. ' for ' .. piecePrice)) 
+            getPlayer():setHaloNote(tostring('Sold ' .. toSell:getName() .. ' for ' .. piecePrice))
             totalSellAmt = totalSellAmt + piecePrice
-            toSell:getContainer():DoRemoveItem(toSell);
+            atm:DoRemoveItem(toSell);
             getPlayerLoot(0):refreshBackpacks()
         else
             getPlayerLoot(0):refreshBackpacks()
@@ -190,11 +170,15 @@ local function playATMsfx(player)
 end
 ------------------------               ---------------------------
 
+if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
+    require "shop-wallet"
+end
+
 function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
 
-local player = getSpecificPlayer(char)
-   local atmTiles = {"location_business_bank_01_64", "location_business_bank_01_65", "location_business_bank_01_66",
-                "location_business_bank_01_67"}
+    local player = getSpecificPlayer(char)
+    local atmTiles = {"location_business_bank_01_64", "location_business_bank_01_65", "location_business_bank_01_66",
+                      "location_business_bank_01_67"}
     if test and ISWorldObjectContextMenu.Test then
         return true
     end
@@ -210,66 +194,73 @@ local player = getSpecificPlayer(char)
                 local spr = obj:getSprite():getName()
                 if spr == atmTiles[1] or spr == atmTiles[2] or spr == atmTiles[3] or spr == atmTiles[4] then
                     if not menuCreated then
-                        if not instanceof(obj, "IsoThumpable") and not obj:getModData()['atmConverted'] and not obj:getContainer() and player:isAccessLevel('admin') then 
-                           
-                                context:addOption("Admin: Activate ATM", spr, (function()
-                                    sledgeDestroy(obj)
-                                    obj:getSquare():transmitRemoveItemFromSquare(obj)
-                                    --[[   
-                                    if isClient() then
-                                        obj:transmitCompleteItemToServer();
-                                        obj:transmitUpdatedSpriteToClients()
-                                    end 
-                                    ]]
-                                    obj = IsoThumpable.new(getCell(), square, spr, false, ISWoodenContainer:new(spr, nil))
-                                     
-                                    obj:setSprite(spr)
-                                    obj:getSprite():setName(spr)
-                                    obj:setIsThumpable(true)
-                                    obj:setIsContainer(true)
-                                    obj:setCanPassThrough(false)
-                                   -- obj:setContainerType('locker')   
-                                    obj:setIsDismantable(false)
-                                    obj:setBlockAllTheSquare(true)
-                                    -- obj:createContainersFromSpriteProperties()
-                                    obj:getContainer():setDrawDirty(true);
-                                    obj:getModData()['atmConverted'] = true
+                        if not instanceof(obj, "IsoThumpable") and not obj:getModData()['atmConverted']  and
+                                not obj:getContainer() then--and player:isAccessLevel('admin') then
+                            context:addOption("Admin: Activate ATM", spr, (function()
+                                sledgeDestroy(obj)
+                                obj:getSquare():transmitRemoveItemFromSquare(obj)
+                                --[[
+                                if isClient() then
+                                    obj:transmitCompleteItemToServer();
+                                    obj:transmitUpdatedSpriteToClients()
+                                end
+                                ]]
+                                obj = IsoThumpable.new(getCell(), square, spr, false, ISWoodenContainer:new(spr, nil))
 
-                                    -- obj:AddItem('Base.Apple')
-                                    square:AddTileObject(obj);
-                                    if isClient() then
-                                        obj:transmitCompleteItemToServer();
-                                        obj:transmitUpdatedSpriteToClients()
-                                    end
-                                    getPlayerLoot(0):refreshBackpacks()
-                                end))
-                         
-                      
+                                obj:setSprite(spr)
+                                obj:getSprite():setName(spr)
+                                obj:setIsThumpable(true)
+                                obj:setIsContainer(true)
+                                obj:setCanPassThrough(false)
+                                obj:setContainerType('atm2')
+                                obj:setIsDismantable(false)
+                                obj:setBlockAllTheSquare(true)
+                                -- obj:createContainersFromSpriteProperties()
+                                obj:getContainer():setDrawDirty(true)
+                                obj:getContainer():setType('atm2')
+                                obj:getModData()['atmConverted'] = true
+
+                                -- obj:AddItem('Base.Apple')
+                                square:AddTileObject(obj);
+                                if isClient() then
+                                    obj:transmitCompleteItemToServer();
+                                    obj:transmitUpdatedSpriteToClients()
+                                end
+                                getPlayerLoot(0):refreshBackpacks()
+                            end))
+
+
 
                         elseif instanceof(obj, "IsoThumpable") and obj:getModData()['atmConverted'] == true then
                             if SandboxVars.FATM2.Item then
-                                context:addOption("ATM2: Sell for Cash item ", spr, (function()                 
-                                    local containers = ISInventoryPaneContextMenu.getContainers(player)
-                                    local totalSellAmt = FunctionalATMs2.getTotalItemsValue(containers)
+                                context:addOption("ATM2: Sell for Cash item ", spr, (function()
+                                    local totalSellAmt = FunctionalATMs2.getTotalItemsValue(obj:getContainer())
                                     totalSellAmt = math.floor(totalSellAmt)
-                                    getPlayer():getInventory():AddItems('Base.Money', totalSellAmt)
+
                                     if totalSellAmt == 0 then
                                         player:setHaloNote('Nothing to sell')
                                     else
+                                        if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
+                                            local money = InventoryItemFactory.CreateItem('Base.Money')
+                                            if money then
+                                                generateMoneyValue(money, totalSellAmt)
+                                                player:getInventory():AddItem(money)
+                                            end
+                                        else
+                                            player:getInventory():AddItems('Base.Money', totalSellAmt)
+                                        end
                                         player:setHaloNote('Recieved: $' .. totalSellAmt)
                                     end
                                     getPlayerLoot(0):refreshBackpacks()
                                     obj:getContainer():setDrawDirty(true);
-                                    
+
                                     playATMsfx(player)
 
                                 end))
                             end
                             if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
-                                require "shop-wallet"
-                                context:addOption("ATM2: Sell Direct to wallet", spr, (function()                                    
-                                    local containers = ISInventoryPaneContextMenu.getContainers(player)
-                                    local totalSellAmt = FunctionalATMs2.getTotalItemsValue(containers)
+                                context:addOption("ATM2: Sell Direct to wallet", spr, (function()
+                                    local totalSellAmt = FunctionalATMs2.getTotalItemsValue(obj:getContainer())
                                     totalSellAmt = math.floor(totalSellAmt)
                                     sendClientCommand("shop", "transferFunds", {
                                         giver = nil,
