@@ -139,22 +139,19 @@ function FunctionalATMs2.check(toSell)
     end
 end
 ------------------------               ---------------------------
-function FunctionalATMs2.getTotalItemsValue(containers, obj)
+function FunctionalATMs2.getTotalItemsValue(atm)
     local totalSellAmt = 0
-    local container = nil
-    local atm = containers:get(2)
 
     print('-------------------------')
     for i = atm:getItems():size(), 1, -1 do
         local toSell = atm:getItems():get(i - 1);
 
         local piecePrice = FunctionalATMs2.checkQty(toSell)
-        if toSell and piecePrice>0 and
-                not (toSell:isCustomName() and toSell:isCustomName() ~= toSell:getName()) then
+        if toSell and piecePrice>0 and not (toSell:isCustomName() and toSell:isCustomName() ~= toSell:getName()) then
             print('Sold ' .. toSell:getName() .. ' for ' .. piecePrice)
             getPlayer():setHaloNote(tostring('Sold ' .. toSell:getName() .. ' for ' .. piecePrice))
             totalSellAmt = totalSellAmt + piecePrice
-            toSell:getContainer():DoRemoveItem(toSell);
+            atm:DoRemoveItem(toSell);
             getPlayerLoot(0):refreshBackpacks()
         else
             getPlayerLoot(0):refreshBackpacks()
@@ -236,8 +233,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                         elseif instanceof(obj, "IsoThumpable") and obj:getModData()['atmConverted'] == true then
                             if SandboxVars.FATM2.Item then
                                 context:addOption("ATM2: Sell for Cash item ", spr, (function()
-                                    local containers = ISInventoryPaneContextMenu.getContainers(player)
-                                    local totalSellAmt = FunctionalATMs2.getTotalItemsValue(containers)
+                                    local totalSellAmt = FunctionalATMs2.getTotalItemsValue(obj:getContainer())
                                     totalSellAmt = math.floor(totalSellAmt)
 
                                     if totalSellAmt == 0 then
@@ -263,8 +259,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                             end
                             if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
                                 context:addOption("ATM2: Sell Direct to wallet", spr, (function()
-                                    local containers = ISInventoryPaneContextMenu.getContainers(player)
-                                    local totalSellAmt = FunctionalATMs2.getTotalItemsValue(containers)
+                                    local totalSellAmt = FunctionalATMs2.getTotalItemsValue(obj:getContainer())
                                     totalSellAmt = math.floor(totalSellAmt)
                                     sendClientCommand("shop", "transferFunds", {
                                         giver = nil,
