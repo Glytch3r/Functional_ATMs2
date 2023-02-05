@@ -17,7 +17,7 @@ https://steamcommunity.com/id/glytch3r/myworkshopfiles/
 https://www.glytch3r.com
 https://ko-fi.com/glytch3r
 Discord: Glytch3r#2892
-
+--special thanks to ChuckGPT for fixing the bugged convert options
 ----------------------------------------------------------------------------------------------------------------------------
 --]]
 --require "lua_timers"
@@ -195,8 +195,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                 if spr == atmTiles[1] or spr == atmTiles[2] or spr == atmTiles[3] or spr == atmTiles[4] then
                     if not menuCreated then
                         if not instanceof(obj, "IsoThumpable") and not obj:getModData()['atmConverted']  and
-                                not obj:getContainer() then--and player:isAccessLevel('admin') then
-                            context:addOption("Admin: Activate ATM", spr, (function()
+                                not obj:getContainer() and player:isAccessLevel('admin') then context:addOption("Admin: Activate ATM", spr, (function()
                                 sledgeDestroy(obj)
                                 obj:getSquare():transmitRemoveItemFromSquare(obj)
                                 --[[
