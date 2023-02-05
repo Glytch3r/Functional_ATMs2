@@ -1,0 +1,18 @@
+{
+	"Lua.diagnostics.globals": [
+		"ISInventoryPaneContextMenu",
+		"getPlayer",
+		"sendClientCommand",
+		"getActivatedMods",
+		"getPlayerLoot",
+		"addSound",
+		"getSoundManager",
+		"instanceof",
+		"ISWorldObjectContextMenu",
+		"isAdmin",
+		"sledgeDestroy",
+		"isClient",
+		"IsoThumpable",
+		"ISWoodenContainer"
+	]
+}

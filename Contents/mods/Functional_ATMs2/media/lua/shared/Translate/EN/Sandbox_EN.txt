@@ -1,0 +1,5 @@
+Sandbox_EN = {
+Sandbox_FATM2 = "Functional_ATMs2",
+Sandbox_FATM2_Item = "Convert to Cash Item",
+Sandbox_FATM2_Wallet  = "Convert to Wallet Data"
+}

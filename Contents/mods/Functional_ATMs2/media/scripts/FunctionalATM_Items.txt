@@ -1,0 +1,5 @@
+
+module fATM {  imports { Base  }
+  
+ sound ATMCash {  category = Improvised, clip { file = media/sound/ATM_sfx.ogg,  }  }
+}

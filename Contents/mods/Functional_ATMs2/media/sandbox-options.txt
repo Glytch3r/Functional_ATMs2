@@ -1,0 +1,15 @@
+VERSION = 1,
+
+
+option FATM2.Item {
+type = boolean,
+default = true,
+page = FATM2,
+translation = FATM2_Item,
+}
+option FATM2.Wallet {
+type = boolean,
+default = true,
+page = FATM2,
+translation = FATM2_Wallet,
+}

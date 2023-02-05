@@ -1,0 +1,45 @@
+version=1
+id=2919435743
+title=Functional_ATMs2
+description=[h1] Functional_ATMs2 by Glytch3r  [/h1]
+description=
+description=Update:
+description=added SANDBOX options
+description=
+description=- Disable/Enable Convert to cash item
+description=- Disable/Enable Convert to wallet data
+description=
+description=
+description=Adds function to vanilla ATM tiles
+description=By default they dont come with the functions
+description=you must ACTIVATE IT!
+description=only admins can activate it
+description=go to a vanilla tile atm and right click to convert it
+description=
+description=[ Cannot be destroyed by non admin when converted ]
+description=
+description=Diamond items = 5$
+description=Locket & Dogtag = 3$
+description=Ruby, Sapphire, Amber, Amethyst Pearl & Emerald items = 2$
+description=Antique, Gold & Silver items = 1$
+description=the ATM becomes a container
+description=to sell you just place all the items you want to sell in the ATM's  container
+description=with custom sound effect
+description=
+description=Compatible with Chuck's Shops and Traders
+description=[url]https://steamcommunity.com/sharedfiles/filedetails/?id=2853615523[/url]
+description=
+description=[quote=author]
+description=Coded by [b] Glytch3r [/b]
+description=
+description=Commissioned by [b]NukaBoy[/b]
+description=Cataclysm Survival PZ Server
+description=
+description=Donations:
+description=https://ko-fi.com/glytch3r/
+description=[/quote]
+description=Contact me if you need any custom mod for your server
+description=Discord: Glytch3r#2892
+description=[url=https://ko-fi.com/Glytch3r][img]https://storage.ko-fi.com/cdn/brandasset/kofi_button_dark.png[/img][/url]
+tags=Build 41;Building;Items;Misc;Models;Multiplayer;Pop Culture;Realistic;Silly/Fun;Textures
+visibility=public
