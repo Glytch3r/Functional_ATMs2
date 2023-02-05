@@ -173,6 +173,10 @@ local function playATMsfx(player)
 end
 ------------------------               ---------------------------
 
+if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
+    require "shop-wallet"
+end
+
 function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
 
 local player = getSpecificPlayer(char)
@@ -249,8 +253,6 @@ local player = getSpecificPlayer(char)
                                 end))
                             end
                             if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
-                                require "shop-wallet"
-                                context:addOption("ATM2: Sell Direct to wallet", spr, (function()                                    
                                     local containers = ISInventoryPaneContextMenu.getContainers(player)
                                     local totalSellAmt = FunctionalATMs2.getTotalItemsValue(containers)
                                     totalSellAmt = math.floor(totalSellAmt)
