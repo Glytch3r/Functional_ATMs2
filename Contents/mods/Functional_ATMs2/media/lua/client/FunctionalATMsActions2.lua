@@ -229,8 +229,13 @@ function FunctionalATMs2.getTotalItemsValue(atm)
             print('Sold ' .. toSell:getName() .. ' for ' .. piecePrice)
             getPlayer():setHaloNote(tostring('Sold ' .. toSell:getName() .. ' for ' .. piecePrice)) 
             totalSellAmt = totalSellAmt + piecePrice
+            
+            if isClient() then --and not instanceof(item:getOutermostContainer():getParent(), "IsoPlayer") and item:getContainer():getType()~="floor" then
+            toSell:getContainer():removeItemOnServer(toSell);
+            end
             toSell:getContainer():DoRemoveItem(toSell);
             getPlayerLoot(0):refreshBackpacks()
+            ISInventoryPage.renderDirty = true
         else
             getPlayerLoot(0):refreshBackpacks()
         end
@@ -271,8 +276,8 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                 local spr = obj:getSprite():getName()
                 if spr == atmTiles[1] or spr == atmTiles[2] or spr == atmTiles[3] or spr == atmTiles[4] then
                     if not menuCreated then
-                        if not instanceof(obj, "IsoThumpable") and not obj:getModData()['atmConverted']  and
-                                not obj:getContainer() and player:isAccessLevel('admin') then 
+                        if not instanceof(obj, "IsoThumpable") and not obj:getModData()['atmConverted']  and --not obj:getContainer() and                                
+                                player:isAccessLevel('admin') then 
 								context:addOption("Admin: Activate ATM", spr, (function()
                                 sledgeDestroy(obj)
                                 obj:getSquare():transmitRemoveItemFromSquare(obj)
@@ -283,20 +288,18 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                 end
                                 ]]
                                 obj = IsoThumpable.new(getCell(), square, spr, false, ISWoodenContainer:new(spr, nil))
-
                                 obj:setSprite(spr)
                                 obj:getSprite():setName(spr)
                                 obj:setIsThumpable(true)
                                 obj:setIsContainer(true)
                                 obj:setCanPassThrough(false)
-                                obj:setContainerType('atm2')
+                                --obj:setContainerType('atm2')
                                 obj:setIsDismantable(false)
                                 obj:setBlockAllTheSquare(true)
                                 -- obj:createContainersFromSpriteProperties()
                                 obj:getContainer():setDrawDirty(true)
-                                obj:getContainer():setType('atm2')
+                                --obj:getContainer():setType('atm2')
                                 obj:getModData()['atmConverted'] = true
-
                                 -- obj:AddItem('Base.Apple')
                                 square:AddTileObject(obj);
                                 if isClient() then
@@ -304,6 +307,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                     obj:transmitUpdatedSpriteToClients()
                                 end
                                 getPlayerLoot(0):refreshBackpacks()
+                                SendCommandToServer("/save")
                             end))
 
 
@@ -332,7 +336,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                     obj:getContainer():setDrawDirty(true);
 
                                     playATMsfx(player)
-
+                                    
                                 end))
                             end
                             if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
@@ -353,7 +357,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                     getPlayerLoot(0):refreshBackpacks()
                                     obj:getContainer():setDrawDirty(true);
                                     playATMsfx(player)
-
+                                    
                                 end))
                             end
                         end
