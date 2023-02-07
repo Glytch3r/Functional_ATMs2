@@ -109,14 +109,22 @@ local itemToSellValues = {
     ["gold"]=1, ["silver"]=1, ["antique"]=1,
 }
 
----creates a second table of just names and sorts them by the associative array's value
----this table is just the string-patterns to use with pairs() for consistent order
+---You cannot rely on associative arrays' order, so you need a numerically keyed list with matching values
+---first load the keys with less-than-or-equal to 0 values as they don't need to be sorted
 local itemsNamesSorted = {}
-for key, value in pairs(itemToSellValues) do table.insert(itemsNamesSorted, key) end
-table.sort(itemsNamesSorted, function(a, b) return (itemToSellValues[a] < itemToSellValues[b]) end)
+for key, value in pairs(itemToSellValues) do if value <= 0 then table.insert(itemsNamesSorted, key) end end
+
+---secondly, grab the keys with greater-than 0 values, and load them into a new list,
+---sort them based on the matching value in the associative array
+local itemsNeedSorting = {}
+for key, value in pairs(itemToSellValues) do if value > 0 then table.insert(itemsNeedSorting, key) end end
+table.sort(itemsNeedSorting, function(a, b) return (itemToSellValues[a] > itemToSellValues[b]) end)
+---add the sorted keys (now values) into the list with non-sorted less-than-or-equal to 0
+for key, value in pairs(itemsNeedSorting) do table.insert(itemsNamesSorted, value) end
+------This creates a list of 0 values first, then highest to lowest after (0,0,0,0,5,4,3,2,1)
+
 
 function FunctionalATMs2.checkQty(toSell)
-
     local itemName = string.lower(toSell:getName())
 
     ---use sorted table with pairs() for consistent order
@@ -195,7 +203,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                 if spr == atmTiles[1] or spr == atmTiles[2] or spr == atmTiles[3] or spr == atmTiles[4] then
                     if not menuCreated then
                         if not instanceof(obj, "IsoThumpable") and not obj:getModData()['atmConverted']  and
-                                not obj:getContainer() and player:isAccessLevel('admin') then
+                                not obj:getContainer() then-- and player:isAccessLevel('admin') then
                             context:addOption("Admin: Activate ATM", spr, (function()
                                 sledgeDestroy(obj)
                                 obj:getSquare():transmitRemoveItemFromSquare(obj)
