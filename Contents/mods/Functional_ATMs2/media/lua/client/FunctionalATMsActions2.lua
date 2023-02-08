@@ -17,7 +17,7 @@ https://steamcommunity.com/id/glytch3r/myworkshopfiles/
 https://www.glytch3r.com
 https://ko-fi.com/glytch3r
 Discord: Glytch3r#2892
-
+--special thnx to ChuckGPT for helping me refactor and integrate to atm v2 with his shops and traders mod
 ----------------------------------------------------------------------------------------------------------------------------
 --]]
 --require "lua_timers"
@@ -57,47 +57,9 @@ Gold & Silver items = 1$
 glytch3rDebug = true
 
  ]]
---[[ 
-FunctionalATMs2.Filteritems = {}
-function FunctionalATMs2.checkQty(toSell)
-
-
-local zeroItems = "Sweater, sweater, sock, Sock, Hat_GoldStar, jacket, Jacket, hat, Hat, paint, Paint, shirt, Shirt, pants, Pants"
-local fiveItems = "Diamond, diamond"
-local threeItems = "Tags, Tag, Locket, locket"
-local twoItems = "Ruby, ruby, Pearl, pearl, Sapphire, sapphire, Emerald, emerald, Amethyst, amethyst, Amber, amber"
-local oneItems = "Gold, gold, Silver, silver, Antique, antique"
-
-for item in string.gmatch(zeroItems, "%a+") do
-  FunctionalATMs2.Filteritems[item] = 0
-end
-
-for item in string.gmatch(fiveItems, "%a+") do
-  FunctionalATMs2.Filteritems[item] = 5
-end
-
-for item in string.gmatch(threeItems, "%a+") do
-  FunctionalATMs2.Filteritems[item] = 3
-end
-
-for item in string.gmatch(twoItems, "%a+") do
-  FunctionalATMs2.Filteritems[item] = 2
-end
-
-for item in string.gmatch(oneItems, "%a+") do
-  FunctionalATMs2.Filteritems[item] = 1
-end
-
-
-  local name = toSell:getName()
-  return FunctionalATMs2.Filteritems[name] 
-end
-
- ]]
-
 ---associative array of string-patterns and values
 local itemToSellValues = {
-    ["sweater"]=0, ["hat"]=0, --["hat_goldstar"]=0,
+    ["sweater"]=0, ["hat"]=0, ["star"]=0, --["hat_goldstar"]=0,
     ["jacket"]=0, ["paint"]=0, ["sock"]=0, ["shirt"]=0, ["pants"]=0,
 
     ["diamond"]=5,
@@ -138,6 +100,13 @@ function FunctionalATMs2.checkQty(toSell)
     return 0
 end
 
+function FunctionalATMs2.isShopValid()
+    if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then 
+        return true 
+    else 
+        return false 
+    end
+end
 
 function FunctionalATMs2.check(toSell)
     if sellables[toSell] then
@@ -159,6 +128,7 @@ function FunctionalATMs2.getTotalItemsValue(atm)
             print('Sold ' .. toSell:getName() .. ' for ' .. piecePrice)
             getPlayer():setHaloNote(tostring('Sold ' .. toSell:getName() .. ' for ' .. piecePrice))
             totalSellAmt = totalSellAmt + piecePrice
+            if isClient() then atm:removeItemOnServer(toSell); end
             atm:DoRemoveItem(toSell);
             getPlayerLoot(0):refreshBackpacks()
         else
@@ -166,8 +136,6 @@ function FunctionalATMs2.getTotalItemsValue(atm)
         end
     end
 
-    -- ISInventoryPage:transferAll()
-    -- container:clear()
     return totalSellAmt
 end
 
@@ -247,7 +215,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                     if totalSellAmt == 0 then
                                         player:setHaloNote('Nothing to sell')
                                     else
-                                        if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
+                                        if FunctionalATMs2.isShopValid() then
                                             local money = InventoryItemFactory.CreateItem('Base.Money')
                                             if money then
                                                 generateMoneyValue(money, totalSellAmt)
@@ -260,7 +228,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                     end
                                     getPlayerLoot(0):refreshBackpacks()
                                     obj:getContainer():setDrawDirty(true);
-
+                                    ISInventoryPane:refreshContainer()
                                     playATMsfx(player)
 
                                 end))
@@ -283,7 +251,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                     getPlayerLoot(0):refreshBackpacks()
                                     obj:getContainer():setDrawDirty(true);
                                     playATMsfx(player)
-
+                                    ISInventoryPane:refreshContainer()
                                 end))
                             end
                         end
@@ -296,32 +264,3 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
 end
 
 Events.OnFillWorldObjectContextMenu.Add(FunctionalATMs2.ContextMenu)
--- Events.OnContainerUpdate.Add(FunctionalATMs2.checkIfGold)
-
-------------------------               
---[[ function GlytchMenu(key)
-if (key==199) then --home
-print('glytch3r')
-if not (getCore():getDebug() or isAdmin()) then return; end 
-BrushToolManager.openPanel(getPlayer())
-	return key
-	end
-end
-
-Events.OnKeyPressed.Add(GlytchMenu); ]]
---[[ 
-local toPrint = ""
-local sellables = {}
-local items = getScriptManager():getAllItems()
-for i = 0, items:size()-1  do
-        local toSell = items:get(i)
-  	
-  if  isSellable(toSell) then 
-		--print(goldItem:getName())
-	    print(toSell:getName())	
-		toPrint = toPrint..' '.. toSell:getName()  .."\n"
-	end 
-end
-Clipboard.setClipboard(toPrint)
-
- ]]
