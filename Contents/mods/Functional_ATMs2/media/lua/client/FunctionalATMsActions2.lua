@@ -47,7 +47,7 @@ Events.OnGameStart.Add(function()
         end
     end
 end)
-
+ 
 --[[ 
 Diamond items = 5$
 Locket & Dogtag = 3$
