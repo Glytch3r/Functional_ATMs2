@@ -33,13 +33,33 @@ Recipe.OnTest = Recipe.OnTest or {}
 FunctionalATMs2 = {}
 sellables = {}
 
+
+function FunctionalATMs2.isShopValid()
+    if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
+        return true
+    else
+        return false
+    end
+end
+
+function FunctionalATMs2.ATMxShops()
+if not FunctionalATMs2.isShopValid() then return end
+local player = getPlayer()
+    if player and not player:getModData()['ATMxShops'] then 
+        getOrSetWalletID(player)  -- initiate player wallet
+        player:getModData()['ATMxShops'] = true   -- prevent from doing it again next login
+    end
+end
+
+Events.OnGameStart.Add(FunctionalATMs2.ATMxShops)
+
 Events.OnGameStart.Add(function()
     local oldDestroy = ISDestroyCursor.canDestroy;
     function ISDestroyCursor.canDestroy(self, object)
         -- local atmTiles = {"location_business_bank_01_64", "location_business_bank_01_65", "location_business_bank_01_66", "location_business_bank_01_67"}
         local origReturn = oldDestroy(self, object)
         if origReturn then
-            if object:getModData()['atmConverted'] == true and not  getPlayer():isAccessLevel('admin')  then
+            if object:getModData()['atmConverted'] == true and not getPlayer():isAccessLevel('admin')  then
                 return false
             else
                 return origReturn
@@ -47,16 +67,7 @@ Events.OnGameStart.Add(function()
         end
     end
 end)
- 
---[[ 
-Diamond items = 5$
-Locket & Dogtag = 3$
-Ruby, Sapphire & Emerald items = 2$
-Gold & Silver items = 1$
 
-glytch3rDebug = true
-
- ]]
 ---associative array of string-patterns and values
 local itemToSellValues = {
     ["sweater"]=0, ["hat"]=0, ["star"]=0, --["hat_goldstar"]=0,
@@ -85,10 +96,8 @@ table.sort(itemsNeedSorting, function(a, b) return (itemToSellValues[a] > itemTo
 for key, value in pairs(itemsNeedSorting) do table.insert(itemsNamesSorted, value) end
 ------This creates a list of 0 values first, then highest to lowest after (0,0,0,0,5,4,3,2,1)
 
-
 function FunctionalATMs2.checkQty(toSell)
     local itemName = string.lower(toSell:getName())
-
     ---use sorted table with pairs() for consistent order
     --- `name` (value in table) is used as a "key" in the associative array to get matching value there
     for _,name in pairs(itemsNamesSorted) do
@@ -96,17 +105,10 @@ function FunctionalATMs2.checkQty(toSell)
             return itemToSellValues[name]
         end
     end
-
     return 0
 end
 
-function FunctionalATMs2.isShopValid()
-    if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then 
-        return true 
-    else 
-        return false 
-    end
-end
+
 
 function FunctionalATMs2.check(toSell)
     if sellables[toSell] then
@@ -135,7 +137,6 @@ function FunctionalATMs2.getTotalItemsValue(atm)
             getPlayerLoot(0):refreshBackpacks()
         end
     end
-
     return totalSellAmt
 end
 
@@ -144,14 +145,13 @@ local function playATMsfx(player)
     getSoundManager():PlayWorldSound('ATMCash', player:getSquare(), 0, 5, 5, false);
     addSound(player, player:getX(), player:getY(), player:getZ(), 5, 1)
 end
+
 ------------------------               ---------------------------
 
-if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
-    require "shop-wallet"
-end
+if FunctionalATMs2.isShopValid() then require "shop-wallet" end
+
 
 function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
-
     local player = getSpecificPlayer(char)
     local atmTiles = {"location_business_bank_01_64", "location_business_bank_01_65", "location_business_bank_01_66",
                       "location_business_bank_01_67"}
@@ -164,14 +164,14 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
     for _, object in ipairs(worldobjects) do
         local square = object:getSquare()
         if square then
-
             for i = 0, square:getObjects():size() - 1 do
                 local obj = square:getObjects():get(i)
                 local spr = obj:getSprite():getName()
                 if spr == atmTiles[1] or spr == atmTiles[2] or spr == atmTiles[3] or spr == atmTiles[4] then
                     if not menuCreated then
                         if not instanceof(obj, "IsoThumpable") and not obj:getModData()['atmConverted']  and
-                                not obj:getContainer() and player:isAccessLevel('admin') then
+                            not obj:getContainer() and player:isAccessLevel('admin') then
+
                             context:addOption("Admin: Activate ATM", spr, (function()
                                 sledgeDestroy(obj)
                                 obj:getSquare():transmitRemoveItemFromSquare(obj)
@@ -182,7 +182,6 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                 end
                                 ]]
                                 obj = IsoThumpable.new(getCell(), square, spr, false, ISWoodenContainer:new(spr, nil))
-
                                 obj:setSprite(spr)
                                 obj:getSprite():setName(spr)
                                 obj:setIsThumpable(true)
@@ -194,7 +193,6 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                 obj:getContainer():setType('atm2')
                                 obj:getContainer():setDrawDirty(true)
                                 obj:getModData()['atmConverted'] = true
-
                                 -- obj:AddItem('Base.Apple')
                                 square:AddTileObject(obj);
                                 if isClient() then
@@ -203,17 +201,13 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                 end
                                 getPlayerLoot(0):refreshBackpacks()
                             end))
-
-
-
                         elseif instanceof(obj, "IsoThumpable") and obj:getModData()['atmConverted'] == true then
                             if SandboxVars.FATM2.Item then
                                 context:addOption("ATM2: Sell for Cash item ", spr, (function()
                                     local totalSellAmt = FunctionalATMs2.getTotalItemsValue(obj:getContainer())
                                     totalSellAmt = math.floor(totalSellAmt)
-
                                     if totalSellAmt == 0 then
-                                        player:setHaloNote('Nothing to sell')
+                                        player:setHaloNote('Nothing to sell', 255, 50, 50, 100)
                                     else
                                         if FunctionalATMs2.isShopValid() then
                                             local money = InventoryItemFactory.CreateItem('Base.Money')
@@ -228,9 +222,8 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                     end
                                     getPlayerLoot(0):refreshBackpacks()
                                     obj:getContainer():setDrawDirty(true);
-                                    ISInventoryPane:refreshContainer()
+                                    --ISInventoryPane:refreshContainer()
                                     playATMsfx(player)
-
                                 end))
                             end
                             if getActivatedMods():contains("pz-shops-and-traders") and SandboxVars.FATM2.Wallet then
@@ -244,14 +237,16 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                         receive = nil
                                     })
                                     if totalSellAmt == 0 then
-                                        player:setHaloNote('Nothing to sell')
+                                        player:setHaloNote('Nothing to sell', 255, 50, 50, 100)
                                     else
+                                    --initiates wallet if it hasnt been initiated yet for some reason
+                                    if player and not player:getModData()['ATMxShops'] then getOrSetWalletID(player) end 
                                         player:setHaloNote('Recieved: $' .. totalSellAmt)
                                     end
                                     getPlayerLoot(0):refreshBackpacks()
                                     obj:getContainer():setDrawDirty(true);
                                     playATMsfx(player)
-                                    ISInventoryPane:refreshContainer()
+                                    --ISInventoryPane:refreshContainer()
                                 end))
                             end
                         end
@@ -264,3 +259,6 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
 end
 
 Events.OnFillWorldObjectContextMenu.Add(FunctionalATMs2.ContextMenu)
+
+
+
