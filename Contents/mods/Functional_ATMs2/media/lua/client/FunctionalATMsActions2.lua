@@ -228,7 +228,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                     end
                                     getPlayerLoot(0):refreshBackpacks()
                                     obj:getContainer():setDrawDirty(true);
-                                    ISInventoryPane:refreshContainer()
+                                    --ISInventoryPane:refreshContainer()
                                     playATMsfx(player)
 
                                 end))
@@ -251,7 +251,7 @@ function FunctionalATMs2.ContextMenu(char, context, worldobjects, test)
                                     getPlayerLoot(0):refreshBackpacks()
                                     obj:getContainer():setDrawDirty(true);
                                     playATMsfx(player)
-                                    ISInventoryPane:refreshContainer()
+                                    --ISInventoryPane:refreshContainer()
                                 end))
                             end
                         end
